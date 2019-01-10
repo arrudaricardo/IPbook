@@ -1,0 +1,10 @@
+#ignore env dir
+/venv
+/env
+# py cache
+__pycache__/
+*.pyc
+.DS_Store
+harry
+app.db.harry
+*.db

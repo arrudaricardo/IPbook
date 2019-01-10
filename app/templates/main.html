@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- meta tags -->
+    <meta charset="utf-8">
+    <meta name="description" content="Be part of the collaborative Book written by the Internet.
+              You are going to be able to post {{ max_length }} characters every {{ min_post_interval }} hours until the book reach
+              {{ book_max_post }} submissions.">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="shortcut icon" href="{{url_for('static', filename='img/favicon.ico')}}" type="image/x-icon">
+    <link rel="icon" href="{{url_for('static', filename='img/favicon.ico')}}" type="image/x-icon">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <link rel='stylesheet' href="{{url_for('static', filename='css/main.css')}}">
+
+    <style type="text/css">
+
+    @font-face {
+    font-family: trypewriter;
+    src: url({{ url_for('static', filename='font/Trypewriter.ttf') }});
+    }
+
+    .trypewriter{
+      font-family: trypewriter;
+    }
+
+    </style>
+
+
+    <title>The IPBook. Be part of the collaborative Book written by the Internet.</title>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129215154-3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-129215154-3');
+    </script>
+
+
+  </head>
+  <body>
+
+       <!-- modal -->
+        <div class="modal" id="modal-submit">
+      <a href="#close" class="modal-overlay" aria-label="Close"></a>
+      <div class="modal-container">
+        <div class="modal-header">
+          <a class="btn btn-clear float-right modal-submit-btn" onclick="$('#modal-submit').removeClass('active')" aria-label="Close"></a>
+          <div id='modal-title' class="modal-title h5"></div>
+        </div>
+        <div class="modal-body">
+          <div class="content">
+            <p id='modal-submit-text'></p>
+
+            <div>
+            <form>
+                <input id='email-input' class="form-input" type="email" placeholder="Email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,14}$">
+            </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id='email-btn' class="btn btn-primary modal-submit-btn">Send</button>
+
+        </div>
+      </div>
+    </div>
+
+
+<div class="float-right p-2">
+  <button id='info-btn'>info.</button>
+    <div class="modal" id="modal-id">
+      <a href="#close" class="modal-overlay" aria-label="Close"></a>
+      <div class="modal-container">
+        <div class="modal-header">
+          <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
+          <div class="modal-title h5">Information.</div>
+        </div>
+        <div class="modal-body">
+          <div class="content">
+            <p>Hello, be part of the colaborative Book written by the Internet.</p>
+            <p>You are going to be able to post {{ max_length }} characters every {{ min_post_interval }} hours until the book reach
+            {{ book_max_post }} submissions. Only English non-vulgar words are allowed and the Special characters (?!,.'")</p>
+
+          </div>
+          <div class="modal-footer">
+            <div class="float-left col-xs-6"> dev in <a href='http://www.python.org' rel="noopener" >🐍</a> by <a href='mailto:settiricardo@gmail.com'>Ricardo Arruda</a> </div>
+           <div class='float-right col-xs-2'> <a  class="text-dark" href="https://github.com/arrudaricardo" rel="noopener" >Source code.</a></div>
+         </div>
+        </div>
+      </div>
+    </div>
+   </div>
+
+    <div class='container' style="padding-bottom:12em;" >
+
+
+      <div id='book' class='columns col-xl-6 col-md-7 col-xs-11 p-centered ' style="padding-right
+:35px; padding-left:35px;">
+
+       <div class="col 3 p-centered icon-up" style="height:30px;width:30px">
+      <img id='img-up' onclick='getBookText(book_page)' class="p-centered c-hand" src="{{url_for('static', filename='img/up-arrow.png')}}" alt='up-arrow' style="display:none; opacity: 0.9;">
+      </div>
+
+      <div id='book-text' class="relative" style="display: table-cell; padding-top:5px;" >
+
+
+      <div id="9999999" class="text-light bg-dark" style="display: none; outline: none;" autocapitalize="none" inputmode="text">
+       Continue the story here.</div>
+       <div id='19999999' style="font-size: 0.5em; display:inline-block"></div>
+
+
+      </div>
+
+      <div id='submit-btn-form'class='pt-2 float-right' style="display: none;">
+      <button  class='submit-btn' id='submit-btn'>Submit</button>
+
+      </div>
+      </div>
+
+  </div>
+
+      <div class="m-2 col-2 col-xs-3" style='position:fixed;left: 0;right: 0;bottom: 1%'>
+        <div class="bar bar-sm">
+          <div class="bar-item tooltip tooltip-right" data-tooltip="{{finish_perc}}% Book Completed" role="progressbar" style="width:{{finish_perc}}%;background:#000000;" aria-valuenow="{{finish_perc}}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+
+
+      <div class="px-2" id="share-buttons" style="position:fixed;right:0; bottom:0;">
+  <!-- Facebook --><a href="https://www.facebook.com/dialog/feed?app_id=184683071273&link=www.ipbook.live&picture=https%3A%2F%2Femojipedia-us.s3.dualstack.us-west-1.amazonaws.com%2Fthumbs%2F240%2Fmicrosoft%2F153%2Fopen-book_1f4d6.png&name=IP%20Book%20!&caption=%20&description=Be%20part%20of%20the%20collaborative%20Book%20written%20by%20the%20Internet.&redirect_uri=http%3A%2F%2Fwww.facebook.com%2F" target="_blank"><img src="https://4.bp.blogspot.com/-raFYZvIFUV0/UwNI2ek6i3I/AAAAAAAAGSA/zs-kwq0q58E/s1600/facebook.png" rel="noopener" alt="Facebook" /></a>
+  <!-- Twitter --><a href="http://twitter.com/intent/tweet?text=Be%20part%20of%20the%20collaborative%20Book%20written%20by%20the%20Internet.%20www.ipbook.live" target="_blank"><img src="https://4.bp.blogspot.com/--ISQEurz3aE/UwNI4hDaQMI/AAAAAAAAGS4/ZAgmPiM9Xpk/s1600/twitter.png" rel="noopener" alt="Twitter" /></a>
+    <!-- Reddit --><a href="http://reddit.com/submit?url=Be%20part%20of%20the%20collaborative%20Book%20written%20by%20the%20Internet.%20www.ipbook.live&title=IP%20Book" target="_blank"><img src="https://4.bp.blogspot.com/-1-mZEa1eiyc/UwNI4JytiFI/AAAAAAAAGSs/AoKmBkkJR-s/s1600/reddit.png" rel="noopener" alt="Reddit" /></a>
+  <!-- Email --><a href="mailto:?subject=IP%20Book!&body=Be%20part%20of%20the%20collaborative%20Book%20written%20by%20the%20Internet.%20www.ipbook.live"><img src="https://4.bp.blogspot.com/-njgKtNLrPqI/UwNI2o-9WfI/AAAAAAAAGR4/f8da1gBgyLs/s1600/email.png" rel="noopener" alt="Email" /></a>
+      </div>
+
+
+  </body>
+
+      <!-- lib -->
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jscroll/2.4.1/jquery.jscroll.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+
+    <script type="text/javascript">
+
+//load audio file
+
+let type1 = new Audio("{{url_for('static', filename='audio/typewriter-single-key-type-1.mp3')}}");
+let type2 = new Audio("{{url_for('static', filename='audio/typewriter-single-key-type-2.mp3')}}");
+let type3 = new Audio("{{url_for('static', filename='audio/typewriter-single-key-type-3.mp3')}}");
+let bell1 = new Audio("{{url_for('static', filename='audio/typewriter-single-bell-1.mp3')}}");
+let bell2 = new Audio("{{url_for('static', filename='audio/typewriter-single-bell-2.mp3')}}");
+//volume
+type1.volume = 0.2
+type2.volume = 0.2
+type3.volume = 0.2
+bell1.volume = 0.2
+bell2.volume = 0.2
+
+// book finish boolean
+if( {{finish_perc}} >= 100){
+  var finishBook = true;
+}else{
+  var finishBook = false;
+};
+
+
+//typewrite effect
+let randint = function(n){return Math.floor((Math.random() * n) + 1);}
+function typeEffect(element, speed) {
+	var text = $(element).text();
+	$(element).html('');
+	var i = 0;
+	var timer = setInterval(function() {
+					if (i < text.length) {
+						$(element).append(text.charAt(i));
+            //sound
+            eval('type'+randint(3)+'.play()')
+						i++;
+					} else {
+						clearInterval(timer);
+					}
+				}, speed);
+}
+
+
+// post e-mail *
+$('#email-btn').click(function(event){
+  event.preventDefault();
+  let email = $('#email-input').val();
+    $.post({{url_for('postEmail') | tojson}},
+      {'email':email}).done(function (data) {
+        let result = data.result;
+
+        if (data.result == 1){  // successfully saved e-mail.
+          $('#modal-submit').removeClass('active');
+          toastr["success"](`We will send a notification when the book is completed`, "Sucess.", {onHidden : function(){}});
+
+        }else {
+          toastr["warning"](`E-mail address not valid`, "Error.", {onHidden : function(){}});
+
+        }
+
+});
+});
+
+
+// post book text *
+document.getElementById('submit-btn').addEventListener('click', function(){
+   postBookText(event);
+})
+
+function postBookText(ev) {
+  ev.preventDefault();
+
+  $.ajax({
+
+    method: 'POST',
+    url: {{url_for('postBookText') | tojson}},
+    data: {'txt': $('#9999999').text(), 'lastTextID':lastTextID },
+    success: function (data) {
+
+      console.log(data);
+
+      if (data.result == 1){
+        //toastr["success"](`You posted '${$('#9999999').text()}' was added into the ipBook!`, "Sucess.", {onHidden : function(){}});
+
+        document.getElementById("9999999").contentEditable = false; //not able to edit element enymore
+
+        document.getElementById('9999999').classList += ' d-none'; //hide elem 9999999
+        $('#19999999').hide();
+        $('#submit-btn').fadeOut(400);
+
+        document.getElementById('modal-submit-text').innerHTML = `Your text ${$('#9999999').text()} was added into the IPBook. <p>If you want to receive a notification when the book finished please provide your e-mail adress.</p>`;
+        document.getElementById('modal-title').textContent = `Thank you!`;
+        $('#modal-submit').addClass('active'); // show modal
+        getBookText(page=1); //reload book text.
+
+
+      }
+      else if(data.result == 0){
+        toastr["warning"]("Text should be less than 50 characters.", "Error.", {onHidden : function(){
+
+        }});
+
+      }
+      else if(data.result == 2){
+        toastr["warning"]("Someone posted before you, page is going to update!", "Error.", {onHidden : function(){
+          getBookText(1);
+        }});
+      }
+      else if(data.result == 3){
+        toastr["warning"](`You will be able to post in ${Math.abs(data.reset)}, you can only post every ${data.min_post_interval} hours`, "Error.", {onHidden : function(){
+
+        }});
+      }
+      else if(data.result == 4){
+        toastr["warning"](`Unauthorized characters'`, "Error.", {onHidden : function(){}});
+
+      }
+      else if (data.result == 5){
+        let plural = ['word','is']
+
+        if (data.words.length > 1){plural = ['words','are']};
+          toastr["warning"](`${data.words} ${plural[1]} not valid English ${plural[0]}`, "Error.", {onHidden : function(){}});
+
+      }
+      else if (data.result == 6){
+
+          toastr["warning"](`${data.error}`, "Error.", {onHidden : function(){}});
+
+      }
+
+
+    }
+  });
+};
+
+
+//get book text *
+function getBookText(page){
+  //typeEffect var
+  let delay = 0;
+
+  $.post({{url_for('getBookText') | tojson}},
+    {'page':book_page, 'lastTextID':lastTextID},).done(function (data) {
+      console.log(data);
+      text = data.result;
+      maxLength = data.max_length;  // max length per post
+      lastTextID = data.last_text_id;   // last id in db when sent request.
+
+
+      if(data.page == 0){book_page = 0; $('#img-up').fadeOut(1000);}else{book_page = 1 + data.page;} // if page 0 (all page was loaded) book_page = 0 and hide img-up if no more pages in the server.
+
+      if (data.page > 0){
+
+      if (page == 1){
+        text = text.reverse(); //change order if page 1 to load in reverse for fadein effect top/bot
+
+      }
+
+      for (i = 0; i < text.length; i++) {
+
+
+        // check if id already exists
+        if($(`#${text[i][0]}`).length){
+
+
+        }else{
+        $("#book-text").append(`<div class='tooltip trypewriter' style='display: none; cursor: default;' onmouseout="mouseOver($(this))" onmouseenter="mouseOver($(this))" data-tooltip='${text[i][2]}' id='${text[i][0]}'>${ text[i][1] + " "}</div>`);
+
+        //typeEffect
+        if (page == 1){
+        let textID = text[i][0]
+        let textLength = $(`#${textID}`).text().length;
+        let speed = randomIntFromInterval(50,100) //normal 100
+
+        setTimeout(function(){
+          $(`#${textID}`).css('display', 'inline');
+          typeEffect($(`#${textID}`), speed);
+
+          // scroll to the last text
+         document.getElementById(textID.toString()).scrollIntoView({behavior: "smooth", block: "start", inline: "end"});
+        }, delay);
+
+        delay += textLength * speed + speed;
+
+
+
+        }
+        else{
+
+          $(`#${text[i][0]}`).css({
+               opacity: 0,
+               display: 'inline'
+           }).animate({opacity:1},600 * i);
+
+         }
+
+
+        }
+      }
+
+      if (page == 1){
+        //display submit button after total delay
+
+        setTimeout(function(){
+          // show text input and arrow top
+
+          if (!finishBook) { //check if book has been finished
+          $('#9999999').css('display','inline');
+        }else {
+          // open modal
+          document.getElementById('modal-submit-text').innerHTML = `The book was finished <p>If you want to receive a notification or information to buy the IPBook please provide us your e-mail adress.</p>`;
+          document.getElementById('modal-title').textContent = `Hello!`;
+          $('#modal-submit').addClass('active'); // show modal
+          delay += 2000; // add adicional delay time
+        }
+
+        if( $('#' + {{ item_per_page }}).length){ // check if has more page
+            $('#img-up').fadeIn(800); // load arrow-up if has more pages
+
+        }
+
+
+
+          eval("bell"+randint(2)+".play()") //play bell
+        }, delay);
+
+
+
+
+      }
+
+
+      // order element div[#txt] by id
+    $("#book-text div").sort(function(a, b) {
+      return parseInt(a.id) - parseInt(b.id);
+    }).each(function() {
+      var elem = $(this);
+      elem.remove();
+      $(elem).appendTo("#book-text");
+    });
+
+  }
+
+    });
+
+}
+
+
+// get last text id posted *
+function getLastTextID(){
+
+    $.post({{url_for('lastTextID') | tojson}},
+      {'data': lastTextID}).done(function(data){
+
+        if (data.result == lastTextID || lastTextID == null){
+          console.log('everything alright')
+
+        }else{
+
+          console.log('theres a new text in server')
+          getBookText(1);
+
+        }
+      })
+
+}
+
+
+// when page READY
+$( document ).ready(function(){
+   getBookText(book_page);
+
+   // check for updates in the book
+   setInterval(getLastTextID, 30000);
+
+})
+
+    </script>
+
+
+</html>

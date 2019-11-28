@@ -18,5 +18,5 @@ python-socketio==2.0.0
 six==1.13.0
 SQLAlchemy==1.2.12
 typed-ast==1.4.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 wrapt==1.11.2

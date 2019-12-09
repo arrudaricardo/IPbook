@@ -15,7 +15,7 @@ RUN pip install gunicorn
 COPY . .
 
 # gen database
-RUN ["python", "-c", "from app.models import init_db ; init_db()"]
+RUN ["python", "-c", "from app.models import init_db; init_db()"]
 
 COPY wsgi.py config.py ./
 

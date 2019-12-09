@@ -15,11 +15,9 @@ RUN pip install gunicorn
 COPY . .
 
 # gen database
-RUN ["python", "-c", "from app.models import first_init; first_init()"]
+RUN ["python", "-c", "from app.models import init_db ; init_db()"]
 
 COPY wsgi.py config.py ./
-ENV FLASK_APP main.py
-
 
 EXPOSE 5000
 CMD ["gunicorn", "--bind", ":5000", "wsgi:app"]

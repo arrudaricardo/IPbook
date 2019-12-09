@@ -175,7 +175,7 @@ def db_harry_init():
         db.session.commit()
 
 
-def first_init():
+def init_db():
     db.create_all()
 
     ip = Writer(ip='144.36.119.187')

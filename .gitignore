@@ -8,3 +8,6 @@ __pycache__/
 harry
 app.db.harry
 *.db
+.dockerignore
+docker-compose.debug.yml
+docker-compose.yml
